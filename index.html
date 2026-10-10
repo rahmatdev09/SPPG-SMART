@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="SPPG Smart membantu mengelola operasional dapur Program Makan Bergizi Gratis dalam satu aplikasi."
+    />
+    <meta name="theme-color" content="#f7f8f4" />
+    <title>SPPG Smart — Operasional SPPG lebih teratur</title>
+    <link rel="icon" href="./assets/sppg-smart.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-page="landing">
+    <header class="site-header">
+      <a class="brand" href="./index.html" aria-label="SPPG Smart beranda">
+        <img src="./assets/sppg-smart.svg" alt="" />
+        <span>SPPG <b>Smart</b></span>
+      </a>
+      <nav class="main-nav" aria-label="Navigasi utama">
+        <a href="#sppg-pengguna">SPPG pengguna</a>
+        <a href="#fitur">Fitur</a>
+        <a href="#cara-kerja">Cara kerja</a>
+        <a href="#harga">Harga</a>
+      </nav>
+      <div class="header-actions">
+        <a class="button button-light hidden" id="accountLink" href="./console.html">Akun saya</a>
+        <a class="button button-light" id="signupLink" href="#daftar">Daftar</a>
+        <button class="button button-dark" id="googleLogin" type="button">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.35 12.2c0-.7-.06-1.38-.18-2.03H12v3.84h5.24a4.48 4.48 0 0 1-1.95 2.94v2.49h3.16c1.85-1.7 2.9-4.2 2.9-7.24Z"/><path fill="#34A853" d="M12 21.75c2.65 0 4.88-.88 6.5-2.38l-3.17-2.48c-.88.6-2 1-3.33 1-2.56 0-4.72-1.73-5.5-4.06H3.22v2.56A9.82 9.82 0 0 0 12 21.75Z"/><path fill="#FBBC05" d="M6.5 13.83a5.9 5.9 0 0 1 0-3.66V7.61H3.22a9.83 9.83 0 0 0 0 8.78l3.28-2.56Z"/><path fill="#EA4335" d="M12 6.11c1.45 0 2.75.5 3.77 1.5l2.83-2.83A9.48 9.48 0 0 0 12 2.25a9.82 9.82 0 0 0-8.78 5.36L6.5 10.17c.78-2.33 2.94-4.06 5.5-4.06Z"/></svg>
+          <span>Masuk dengan Google</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero page-width">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> OPERASIONAL SPPG, SATU TEMPAT</div>
+          <h1>Kelola dapur bergizi dengan <span>lebih mudah.</span></h1>
+          <p class="hero-description">
+            Dari stok bahan sampai laporan harian, SPPG Smart membantu tim Anda
+            bekerja lebih rapi, cepat, dan terpantau.
+          </p>
+          <div class="hero-actions">
+            <button class="button button-dark button-large" id="heroLogin" type="button">
+              Mulai dengan Google <span aria-hidden="true">↗</span>
+            </button>
+            <a class="text-link" href="#fitur">Lihat fitur <span aria-hidden="true">↓</span></a>
+          </div>
+          <div class="hero-proof">
+            <div class="avatar-stack" aria-hidden="true"><span>SP</span><span>🍲</span><span>✓</span></div>
+            <p>Lebih tertib untuk setiap proses dapur</p>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Pratinjau dashboard SPPG Smart">
+          <div class="visual-orbit orbit-one"></div>
+          <div class="visual-orbit orbit-two"></div>
+          <div class="dashboard-card">
+            <div class="dashboard-top">
+              <div><span class="tiny-label">CONTOH DASHBOARD SPPG</span><h2>Ringkasan operasional</h2></div>
+              <div class="online-indicator"><i></i> Aktif</div>
+            </div>
+            <div class="dashboard-date">Pratinjau tampilan · data ilustrasi</div>
+            <div class="metric-grid">
+              <article class="metric-card metric-green"><span>Penerima manfaat</span><strong>1.248</strong><small>orang terlayani</small><b>↗ 12%</b></article>
+              <article class="metric-card metric-yellow"><span>Stok bahan</span><strong>86%</strong><small>ketersediaan hari ini</small><b>✓ Aman</b></article>
+            </div>
+            <div class="task-card">
+              <div class="task-heading"><span>Aktivitas operasional</span><span>Hari ini</span></div>
+              <div class="task-row"><i class="task-check">✓</i><span>Penerimaan bahan baku</span><b>Selesai</b></div>
+              <div class="task-row"><i class="task-check">✓</i><span>Persiapan menu makan</span><b>Selesai</b></div>
+              <div class="task-row"><i class="task-pending">•</i><span>Dokumentasi distribusi</span><b class="pending-text">Berjalan</b></div>
+            </div>
+          </div>
+          <div class="floating-note"><span class="note-icon">✦</span><span><b>Data lebih teratur</b><small>Siap diakses tim Anda</small></span></div>
+          <div class="hero-sparkle sparkle-one">✳</div><div class="hero-sparkle sparkle-two">✦</div>
+        </div>
+      </section>
+
+      <section class="benefit-strip page-width" id="cara-kerja">
+        <p>Semua proses penting dapur, tersusun dalam satu alur</p>
+        <div class="benefit-items"><span><i>✓</i> Praktis digunakan</span><span><i>✓</i> Data terpusat</span><span><i>✓</i> Siap diakses kapan saja</span></div>
+      </section>
+
+      <section class="customer-sites page-width" id="sppg-pengguna">
+        <div class="section-heading customer-sites-heading">
+          <div><div class="eyebrow">DIPERCAYA PENGGUNA</div><h2>SPPG yang sudah menggunakan <span>website ini.</span></h2></div>
+          <p>Daftar ini menampilkan website pelanggan yang sudah siap dan disetujui untuk dipublikasikan.</p>
+        </div>
+        <div class="customer-sites-grid" id="customerSites" aria-live="polite">
+          <div class="customer-sites-empty customer-sites-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span><strong>Memuat website SPPG</strong><span>Menyiapkan daftar website pelanggan.</span><div class="loading-site-skeletons" aria-hidden="true"><i></i><i></i><i></i></div></div>
+        </div>
+      </section>
+
+      <section class="features-section page-width" id="fitur">
+        <div class="section-heading">
+          <div><div class="eyebrow">FITUR UNTUK TIM SPPG</div><h2>Kerja harian jadi <span>lebih terarah.</span></h2></div>
+          <p>Fokus pada pelayanan dan kualitas makanan. SPPG Smart membantu merapikan pekerjaan di baliknya.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card feature-wide">
+            <div class="feature-icon icon-green">▦</div><span class="feature-kicker">PANTAU OPERASIONAL</span>
+            <h3>Satu dashboard untuk banyak kebutuhan.</h3>
+            <p>Lihat ringkasan persediaan, aktivitas, dan status operasional tanpa berpindah-pindah catatan.</p>
+            <div class="mini-bars" aria-hidden="true"><i style="height:42%"></i><i style="height:66%"></i><i style="height:54%"></i><i style="height:82%"></i><i style="height:72%"></i><i style="height:100%"></i><i style="height:87%"></i></div>
+          </article>
+          <article class="feature-card"><div class="feature-icon icon-yellow">◫</div><span class="feature-kicker">STOK & BAHAN</span><h3>Persediaan lebih terkontrol.</h3><p>Catat barang masuk, pantau stok, dan ketahui kapan bahan perlu ditambah.</p></article>
+          <article class="feature-card"><div class="feature-icon icon-pink">♨</div><span class="feature-kicker">MENU & GIZI</span><h3>Rencana menu lebih tertata.</h3><p>Kelola menu dan informasi gizi sebagai bagian dari alur kerja harian.</p></article>
+          <article class="feature-card"><div class="feature-icon icon-blue">⌖</div><span class="feature-kicker">DATA PENERIMA</span><h3>Informasi penerima tersusun.</h3><p>Kelola data penerima manfaat dan kebutuhan distribusi dengan lebih rapi.</p></article>
+          <article class="feature-card"><div class="feature-icon icon-purple">▤</div><span class="feature-kicker">DOKUMEN & LAPORAN</span><h3>Dokumen mudah ditelusuri.</h3><p>Simpan dokumen operasional dan dukung pencatatan yang konsisten.</p></article>
+        </div>
+      </section>
+
+      <section class="signup-section page-width" id="daftar">
+        <div class="signup-card">
+          <div class="eyebrow">MULAI DENGAN WEBSITE ANDA</div>
+          <h2>Daftarkan SPPG dan website</h2>
+          <p>Isi nama SPPG dan nama website, lalu cek subdomain <strong>.online</strong> sebelum membuat akun dengan Google.</p>
+          <form id="signupForm" class="signup-form">
+            <label>Nama SPPG
+              <input id="sppgNameInput" name="sppgName" type="text" maxlength="100" placeholder="Contoh: SPPG Ogan Ilir Utara" required />
+            </label>
+            <label>Nama website
+              <input id="websiteNameInput" name="websiteName" type="text" maxlength="80" placeholder="Contoh: SPPG Sejahtera" required />
+            </label>
+            <label>Nama domain
+              <span class="domain-input-wrap"><input id="domainNameInput" name="domainName" type="text" maxlength="63" placeholder="sppgsejahtera" autocomplete="off" required /><span>.online</span></span>
+            </label>
+            <div class="domain-check-row">
+              <button class="button button-light" id="checkDomain" type="button">Cek nama</button>
+              <div id="domainCheckMessage" class="domain-result domain-result-idle" role="status" aria-live="polite">
+                <span class="domain-result-icon" id="domainStatusIcon" aria-hidden="true">?</span>
+                <span class="domain-result-copy"><strong id="domainStatusTitle">BELUM DICEK</strong><span id="domainStatusDetail">Masukkan nama domain, lalu tekan “Cek nama”.</span></span>
+              </div>
+            </div>
+            <button class="button button-dark" id="signupGoogle" type="submit" disabled>Daftar dengan Google</button>
+          </form>
+          <small>Pengecekan melihat status domain pada registry .online dan reservasi pelanggan SPPG Smart. Domain belum dibeli atau didaftarkan sampai proses melalui registrar selesai.</small>
+        </div>
+      </section>
+
+      <section class="pricing-section" id="harga">
+        <div class="page-width pricing-layout">
+          <div class="pricing-copy"><div class="eyebrow">HARGA YANG JELAS</div><h2>Lebih banyak waktu untuk hal yang paling penting.</h2><p>Login dengan akun web SPPG Anda. Paket Gratis menyediakan profil, Premium membuka fitur pengelolaan lengkap.</p><div class="pricing-checks"><span>✓ Login dengan akun SPPG yang terdaftar</span><span>✓ Paket dikelola Super Admin</span><span>✓ Dirancang untuk operasional SPPG</span></div></div>
+          <article class="price-card">
+            <div class="price-card-top"><span class="plan-mark">✦</span><span class="plan-badge">PAKET PREMIUM</span></div>
+            <h3>SPPG Smart Premium</h3><p>Akses lengkap untuk kelola operasional SPPG.</p>
+            <div class="price"><strong>Rp150.000</strong><span>/ bulan</span></div>
+            <ul><li>Semua fitur pengelolaan SPPG</li><li>Stok, menu, supplier & penerima manfaat</li><li>Dokumen dan laporan operasional</li><li>Akses ke aplikasi web yang sudah tersedia</li></ul>
+            <button class="button button-dark price-button" id="priceLogin" type="button">Login untuk mulai <span>↗</span></button>
+            <small>Pengaktifan paket Premium dilakukan oleh administrator.</small>
+          </article>
+        </div>
+      </section>
+      <section class="closing-cta page-width"><div><span class="cta-mark">✳</span><h2>Siap membuat operasional lebih tertib?</h2><p>Login menggunakan akun Google yang sudah terdaftar di web SPPG.</p></div><button class="button button-dark button-large" id="closingLogin" type="button">Login dengan Google <span>↗</span></button></section>
+    </main>
+
+    <footer class="site-footer page-width"><a class="brand" href="./index.html"><img src="./assets/sppg-smart.svg" alt="" /><span>SPPG <b>Smart</b></span></a><p>Operasional SPPG, lebih mudah dikelola.</p><span>© 2026 SPPG Smart</span></footer>
+    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./landing.js"></script>
+  </body>
+</html>

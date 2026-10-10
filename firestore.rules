@@ -1,0 +1,139 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email is string;
+    }
+
+    function accountPath() {
+      return /databases/$(database)/documents/app_users/$(request.auth.token.email);
+    }
+
+    function accountPathForEmail(email) {
+      return /databases/$(database)/documents/app_users/$(email);
+    }
+
+    function isSuperAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'rahmatdev09@gmail.com'
+        && exists(accountPath())
+        && get(accountPath()).data.active == true
+        && get(accountPath()).data.role == 'super_admin';
+    }
+
+    match /app_users/{email} {
+      allow get: if signedIn() && (email == request.auth.token.email || isSuperAdmin());
+      allow list: if isSuperAdmin();
+
+      // One-time bootstrap is restricted to the designated Google account.
+      allow create: if signedIn()
+        && email == 'rahmatdev09@gmail.com'
+        && request.auth.token.email == 'rahmatdev09@gmail.com'
+        && request.resource.data.email == 'rahmatdev09@gmail.com'
+        && request.resource.data.role == 'super_admin'
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly([
+          'email', 'displayName', 'role', 'active', 'createdAt', 'updatedAt'
+        ]);
+
+      // A first Google login can create only its own Free customer account.
+      allow create: if signedIn()
+        && email == request.auth.token.email
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role == 'customer'
+        && request.resource.data.active == true
+        && request.resource.data.plan == 'free'
+        && request.resource.data.hostingStatus == 'not_purchased'
+        && request.resource.data.sppgName is string
+        && request.resource.data.websiteName is string
+        && request.resource.data.domainName is string
+        && request.resource.data.keys().hasOnly([
+          'email', 'displayName', 'role', 'active', 'plan',
+          'hostingStatus', 'sppgName', 'websiteName', 'domainName', 'createdAt', 'updatedAt'
+        ]);
+
+      // The admin panel manages plans, tenant IDs, URLs, and hosting status.
+      allow create, update, delete: if isSuperAdmin() && email != request.auth.token.email;
+    }
+
+    match /domains/{domain} {
+      // Public can check one exact name; listing all reservations is not allowed.
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.domainName == domain
+        && domain.matches('^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\\.online$')
+        && request.resource.data.keys().hasOnly(['domainName', 'createdAt']);
+      allow delete: if isSuperAdmin();
+      allow update: if false;
+    }
+
+    match /public_websites/{siteId} {
+      // Only approved showcase records are stored here; this collection contains no account email.
+      allow get, list: if true;
+      allow create, update: if isSuperAdmin()
+        && request.resource.data.keys().hasOnly(['sppgName', 'websiteName', 'domainName', 'websiteUrl', 'imageBase64', 'createdAt'])
+        && (!request.resource.data.keys().hasAny(['sppgName']) || request.resource.data.sppgName is string)
+        && request.resource.data.websiteName is string
+        && request.resource.data.domainName == siteId
+        && request.resource.data.domainName.matches('^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]\\.online$')
+        && request.resource.data.websiteUrl is string
+        && request.resource.data.imageBase64 is string
+        && (!request.resource.data.keys().hasAny(['createdAt']) || request.resource.data.createdAt is string)
+        && (request.resource.data.imageBase64 == '' || request.resource.data.imageBase64.matches('^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$'))
+        && request.resource.data.imageBase64.size() <= 950000;
+      allow delete: if isSuperAdmin();
+    }
+
+    // Customers can only read their own payment records. Order creation and
+    // status changes are reserved for trusted server-side payment functions.
+    match /payment_orders/{orderId} {
+      allow get, list: if signedIn() && resource.data.email == request.auth.token.email;
+      allow create, update, delete: if false;
+    }
+
+    // Customers submit transfer evidence; only Super Admin can review it.
+    match /payment_requests/{requestId} {
+      allow get, list: if isSuperAdmin()
+        || (signedIn() && resource.data.email == request.auth.token.email);
+      allow create: if signedIn()
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.amount == 150000
+        && request.resource.data.plan == 'premium'
+        && request.resource.data.paymentMethod == 'manual_bsi_transfer'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.proofDataUrl is string
+        && request.resource.data.proofDataUrl.matches('^data:image/jpeg;base64,[A-Za-z0-9+/]+=*$')
+        && request.resource.data.proofDataUrl.size() <= 700000
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 120
+        && request.resource.data.keys().hasOnly([
+          'email', 'displayName', 'amount', 'plan', 'paymentMethod', 'status',
+          'note', 'proofDataUrl', 'createdAt', 'updatedAt'
+        ]);
+      allow update: if isSuperAdmin()
+        && resource.data.status == 'pending'
+        && resource.data.paymentMethod == 'manual_bsi_transfer'
+        && resource.data.proofDataUrl is string
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'reviewedBy', 'reviewedAt', 'updatedAt'
+        ])
+        && request.resource.data.status in ['pending', 'received', 'rejected']
+        && (request.resource.data.status != 'received'
+          || getAfter(accountPathForEmail(resource.data.email)).data.plan == 'premium');
+      allow delete: if isSuperAdmin();
+    }
+
+    // Payment settings (including any future QRIS display configuration) are
+    // private and writable only by the designated Super Admin.
+    match /payment_settings/{settingsId} {
+      allow get: if isSuperAdmin();
+      allow list: if false;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

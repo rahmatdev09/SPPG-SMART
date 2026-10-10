@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7f3" />
+    <meta name="description" content="Kelola akun, website, dan pembayaran SPPG Smart." />
+    <title>Akun saya — SPPG Smart</title>
+    <link rel="icon" href="./assets/sppg-smart.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: { extend: {
+          colors: { forest: { 50: "#f0f5ef", 100: "#e0ebdf", 600: "#38634f", 700: "#28513f", 800: "#1c4234", 900: "#15372c" } },
+          fontFamily: { sans: ["DM Sans", "sans-serif"], display: ["Manrope", "sans-serif"] },
+          boxShadow: { soft: "0 18px 50px rgba(29, 54, 39, .07)" }
+        }}
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body data-page="console" class="console-body min-h-screen bg-[#f5f7f3] font-sans text-slate-800 antialiased">
+    <div class="min-h-screen lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
+      <aside class="console-sidebar fixed inset-x-0 top-0 z-30 flex items-center justify-between bg-forest-900 px-4 py-3 text-white shadow-lg lg:sticky lg:h-screen lg:flex-col lg:items-stretch lg:justify-start lg:px-5 lg:py-7 lg:shadow-none">
+        <a class="flex shrink-0 items-center gap-3" href="./index.html">
+          <img class="h-10 w-10 rounded-xl" src="./assets/sppg-smart.svg" alt="" />
+          <span class="font-display text-[17px] font-extrabold tracking-tight">SPPG <b class="text-lime-300">Smart</b><small class="mt-0.5 block text-[9px] font-bold tracking-[.18em] text-emerald-200/60">CUSTOMER PORTAL</small></span>
+        </a>
+        <nav class="console-nav ml-3 flex min-w-0 items-center gap-1 overflow-x-auto lg:ml-0 lg:mt-12 lg:grid lg:gap-2" aria-label="Navigasi akun">
+          <a class="console-nav-link" data-view-link="dashboard" href="./console.html?view=dashboard"><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><b>Dashboard</b></a>
+          <a class="console-nav-link" data-view-link="profile" href="./console.html?view=profile"><span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><b>Profil</b></a>
+          <a class="console-nav-link" data-view-link="website" href="./console.html?view=website"><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><b>Website</b></a>
+          <a class="console-nav-link" data-view-link="payments" href="./console.html?view=payments"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4.8 9A7.5 7.5 0 0 1 18 6.5L20 12M4 17v-5h5m10.2 3A7.5 7.5 0 0 1 6 17.5L4 12"/></svg></span><b>Pembayaran</b></a>
+          <a class="console-nav-link console-nav-external" href="./index.html"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 5h6v6M19 5l-9 9"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></span><b>Landing page</b></a>
+        </nav>
+        <div class="console-sidebar-user hidden border-t border-white/10 pt-5 lg:mt-auto lg:block">
+          <div class="flex items-center gap-3">
+            <span id="sidebarCustomerMark" class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 text-xs font-extrabold text-lime-200">SP</span>
+            <span class="min-w-0 flex-1"><strong id="sidebarCustomerName" class="block truncate text-xs">Akun SPPG</strong><small id="sidebarCustomerEmail" class="mt-1 block truncate text-[10px] text-emerald-100/60">Masuk dengan Google</small></span>
+            <button class="rounded-lg border border-white/15 px-2.5 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/10" id="signOut" type="button" aria-label="Keluar" title="Keluar">Keluar</button>
+          </div>
+          <div class="sidebar-account-dates"><span>Terdaftar<strong id="sidebarCreatedAt">-</strong></span><span>Paket berakhir<strong id="sidebarExpiresAt">-</strong></span></div>
+        </div>
+      </aside>
+
+      <main class="min-w-0 pt-[68px] lg:pt-0">
+        <header class="hidden h-[70px] items-center justify-between border-b border-slate-200/80 bg-white/80 px-8 backdrop-blur lg:flex xl:px-12">
+          <div class="flex items-center gap-3 text-xs font-semibold text-slate-400"><span>SPPG SMART</span><span>/</span><span id="topbarView" class="text-slate-700">Dashboard</span></div>
+          <a class="text-xs font-semibold text-forest-700 transition hover:text-forest-900" href="./index.html">Kembali ke beranda <span class="text-base" aria-hidden="true">↗</span></a>
+        </header>
+
+        <div class="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10 xl:px-12">
+          <div id="accountLoading" class="account-loading account-loading-portal" role="status" aria-live="polite" aria-label="Memuat akun">
+            <div class="loading-heading"><span class="loading-indicator" aria-hidden="true"></span><div><strong>Menyiapkan ruang akun</strong><span>Memeriksa sesi dan memuat informasi SPPG Smart Anda.</span></div></div>
+            <div class="loading-skeleton-grid" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="loading-skeleton-card" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <div id="accountError" class="account-error hidden" role="alert"></div>
+
+          <div id="accountCard" class="hidden">
+            <div class="mb-7 flex flex-col justify-between gap-4 sm:mb-9 sm:flex-row sm:items-end">
+              <div><p id="viewEyebrow" class="mb-2 text-[10px] font-extrabold tracking-[.2em] text-forest-600">DASHBOARD</p><h1 id="viewTitle" class="font-display text-3xl font-extrabold tracking-tight text-slate-900 sm:text-[38px]">Dashboard</h1><p id="viewDescription" class="mt-2 max-w-xl text-sm leading-6 text-slate-500">Ringkasan akun dan status layanan SPPG Smart Anda.</p></div>
+              <span class="hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-800 sm:inline-flex"><i class="h-1.5 w-1.5 rounded-full bg-emerald-500"></i> Akun aktif</span>
+            </div>
+
+            <section id="dashboardSection" data-view="dashboard" class="account-section hidden space-y-5">
+              <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-forest-900 via-forest-800 to-[#426447] p-6 text-white shadow-soft sm:p-9">
+                <div class="absolute -right-12 -top-20 h-64 w-64 rounded-full border border-white/10"></div><div class="absolute -right-2 -top-10 h-44 w-44 rounded-full border border-white/10"></div>
+                <div class="relative max-w-2xl"><span class="rounded-full bg-white/10 px-3 py-1.5 text-[9px] font-bold tracking-[.16em] text-lime-200">RUANG PELANGGAN SPPG SMART</span><h2 class="mt-5 font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">Selamat datang<span id="welcomeName" class="text-lime-300">.</span></h2><p class="mt-3 max-w-lg text-sm leading-6 text-emerald-50/75">Semua informasi akun, website, dan layanan Anda dapat dipantau dari satu tempat.</p></div>
+              </div>
+              <div class="grid gap-4 md:grid-cols-3">
+                <article class="dashboard-stat"><span class="dashboard-stat-icon bg-amber-50 text-amber-700"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3L12 2Z"/></svg></span><span class="text-xs font-medium text-slate-500">Status paket</span><strong id="dashboardPlan">Paket Gratis</strong><a href="./console.html?view=payments">Lihat paket <span>&rarr;</span></a></article>
+                <article class="dashboard-stat"><span class="dashboard-stat-icon bg-emerald-50 text-emerald-700"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span class="text-xs font-medium text-slate-500">Status website</span><strong id="dashboardWebsiteStatus">Belum disiapkan</strong><div class="dashboard-account-dates"><span>Tanggal daftar<strong id="dashboardCreatedAt">-</strong></span><span>Paket berakhir<strong id="dashboardExpiresAt">-</strong></span><span id="dashboardExpiryCountdownRow" class="hidden">Sisa masa aktif<strong id="dashboardExpiryCountdown">-</strong></span></div><a href="./console.html?view=website">Lihat website <span>&rarr;</span></a></article>
+                <article class="dashboard-stat"><span class="dashboard-stat-icon bg-sky-50 text-sky-700"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg></span><span class="text-xs font-medium text-slate-500">Domain pilihan</span><strong id="dashboardDomain">Belum dipilih</strong><a href="./console.html?view=website">Detail domain <span>&rarr;</span></a></article>
+              </div>
+              <div id="renewalNotice" class="renewal-notice hidden" role="status"><span class="renewal-notice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4.8 9A7.5 7.5 0 0 1 18 6.5L20 12M4 17v-5h5m10.2 3A7.5 7.5 0 0 1 6 17.5L4 12"/></svg></span><span><strong id="renewalNoticeTitle">Paket segera berakhir</strong><small id="renewalNoticeDescription">Perpanjang Premium agar layanan tetap aktif.</small></span><a href="./console.html?view=payments">Perpanjang</a></div>
+              <div class="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
+                <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div class="mb-5"><p class="text-[9px] font-extrabold tracking-[.16em] text-slate-400">MULAI DI SINI</p><h3 class="mt-1 font-display text-lg font-bold text-slate-800">Kelola akun Anda</h3></div><div class="grid gap-3 sm:grid-cols-2"><a class="quick-link" href="./console.html?view=profile"><span class="quick-link-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><span><b>Profil akun</b><small>Lihat identitas akun Anda</small></span><span class="ml-auto">&rarr;</span></a><a class="quick-link" href="./console.html?view=website"><span class="quick-link-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span><b>Website SPPG</b><small>Lihat status dan domain</small></span><span class="ml-auto">&rarr;</span></a></div></section>
+                <section class="rounded-2xl border border-forest-100 bg-forest-50/70 p-5 sm:p-6"><span class="text-[9px] font-extrabold tracking-[.16em] text-forest-600">BUTUH FITUR LENGKAP?</span><h3 class="mt-2 font-display text-lg font-bold text-forest-900">Paket Premium</h3><p class="mt-2 text-xs leading-5 text-forest-800/75">Kelola stok, menu, supplier, penerima manfaat, dokumen, dan laporan.</p><a class="mt-4 inline-flex items-center gap-2 text-xs font-bold text-forest-800" href="./console.html?view=payments">Lihat paket dan pembayaran <span>&rarr;</span></a></section>
+              </div>
+            </section>
+
+            <section id="profileSection" data-view="profile" class="account-section hidden"><div class="profile-page-stack"><div class="portal-card profile-plan-card"><div class="portal-card-heading"><span class="portal-icon bg-amber-50 text-amber-700"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3L12 2Z"/></svg></span><div><p class="portal-kicker">STATUS LANGGANAN</p><h2>Paket dan masa berlaku</h2><p class="portal-description">Informasi periode layanan SPPG Smart Anda.</p></div><span class="plan-pill ml-auto" id="planPill">Paket Gratis</span></div><div class="profile-grid"><div class="profile-item"><span>Paket aktif sejak</span><strong id="profilePremiumPaidAt">Belum tersedia</strong></div><div class="profile-item"><span>Paket berakhir</span><strong id="profilePremiumExpiresAt">Belum tersedia</strong></div></div></div><div class="portal-card"><div class="portal-card-heading"><span class="portal-icon bg-violet-50 text-violet-700"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span><div><p class="portal-kicker">PROFIL PENGGUNA</p><h2>Informasi akun</h2><p class="portal-description">Identitas yang digunakan untuk masuk ke SPPG Smart.</p></div></div><div class="profile-grid"><div class="profile-item"><span>Nama lengkap</span><strong id="profileName">-</strong></div><div class="profile-item"><span>Email Google</span><strong id="profileEmail">-</strong></div></div></div></div></section>
+
+            <section id="websiteSection" data-view="website" class="account-section hidden"><div class="portal-card"><div class="portal-card-heading"><span class="portal-icon bg-emerald-50 text-emerald-700"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><div><p class="portal-kicker">WEBSITE SPPG</p><h2>Website Anda</h2><p class="portal-description">Informasi domain dan kesiapan layanan website.</p></div></div><div class="profile-grid"><div class="profile-item"><span>Nama website</span><strong id="profileWebsite">-</strong></div><div class="profile-item"><span>Domain pilihan</span><strong id="profileDomain">-</strong><button class="copy-domain-button" id="copyDomainButton" type="button">Salin domain</button><small id="copyDomainMessage" class="copy-domain-message" role="status" aria-live="polite"></small></div><div class="profile-item"><span>Firebase project</span><strong id="profileProject">Belum disiapkan</strong></div><div class="profile-item"><span>Status Firebase</span><strong id="profileFirebaseStatus">Belum dikonfigurasi</strong></div><div class="profile-item"><span>Masa berlaku website</span><strong id="websitePremiumExpiresAt">Belum tersedia</strong></div><div class="profile-item"><span>Status website</span><strong id="profileWebsiteStatus">Belum disiapkan</strong></div></div><div class="plan-summary" id="planSummary"></div><div class="account-actions hidden" id="premiumActions"><a class="button button-dark" id="websiteLink" href="#" target="_blank" rel="noopener noreferrer">Buka website <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></svg></a><p>Masuk ke aplikasi pengelolaan SPPG Anda.</p></div></div></section>
+
+            <section id="paymentSection" data-view="payments" class="account-section hidden space-y-5">
+              <section id="checkoutPanel" class="checkout-panel"><div class="checkout-copy"><span class="checkout-label"><span aria-hidden="true">&#10022;</span> PAKET PREMIUM &middot; RP150.000 / BULAN</span><h3 id="checkoutTitle">Transfer untuk mengaktifkan Premium</h3><p>Transfer sesuai nominal berikut, lalu unggah bukti. Admin akan memeriksa pembayaran dan memperbarui status pengajuan Anda.</p></div><div class="bank-transfer-card"><div class="bank-transfer-brand"><span class="bank-logo">BSI</span><span>Bank Syariah Indonesia</span></div><span class="bank-account-label">NOMOR REKENING</span><strong class="bank-account-number">7377781222</strong><button class="copy-account-button" id="copyBankAccount" type="button">Salin nomor rekening</button><div class="bank-transfer-divider"></div><span class="bank-account-label">NOMINAL TRANSFER</span><strong class="bank-transfer-amount">Rp150.000</strong><small>Pastikan nomor rekening dan nama penerima sesuai instruksi resmi dari admin.</small></div><label class="payment-input-label">Nama pengirim<input id="paymentApplicantNote" maxlength="120" placeholder="Nama yang tertera pada rekening pengirim" required /></label><label class="proof-upload-card" for="paymentProofInput"><span class="proof-upload-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M5 14v5h14v-5"/></svg></span><span><strong>Unggah bukti transfer</strong><small>JPG, PNG, atau WebP &middot; maksimal 8 MB</small></span><input id="paymentProofInput" type="file" accept="image/jpeg,image/png,image/webp" required /><span id="paymentProofFileName" class="proof-file-name">Pilih gambar</span></label><span id="paymentProofPreview" class="hidden" aria-hidden="true"></span><button class="button button-dark" id="checkoutButton" type="button">Kirim bukti pembayaran <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button><p class="checkout-secure-note">Status awal menunggu verifikasi admin. Premium aktif setelah admin menyetujui bukti transfer.</p><p class="checkout-message" id="checkoutMessage" role="status" aria-live="polite"></p></section>
+              <section id="paymentHistory" class="payment-history hidden"><div class="payment-history-heading"><div><span class="feature-kicker">AKTIVITAS AKUN</span><h3>Riwayat pembayaran</h3><p>Pantau status verifikasi transfer Anda.</p></div><button class="button button-light" id="refreshPayments" type="button"><svg class="refresh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.8 9A7.5 7.5 0 0 1 18 6.5L20 12M4 17v-5h5m10.2 3A7.5 7.5 0 0 1 6 17.5L4 12"/></svg> <span>Perbarui status</span></button></div><div id="paymentList"></div></section>
+            </section>
+            <div class="account-actions hidden" id="adminActions"><a class="button button-light" href="./admin.html">Panel Admin <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a><p>Kelola paket pengguna SPPG Smart.</p></div>
+          </div>
+        </div>
+        <footer class="mx-auto flex max-w-6xl flex-col gap-2 border-t border-slate-200/80 px-5 py-5 text-[10px] text-slate-400 sm:flex-row sm:justify-between sm:px-8 xl:px-12"><span>&copy; 2026 SPPG Smart</span><span>Operasional SPPG, lebih mudah dikelola.</span></footer>
+      </main>
+    </div>
+    <div class="payment-success-overlay hidden" id="paymentSuccessModal" role="dialog" aria-modal="true" aria-labelledby="paymentSuccessTitle" aria-describedby="paymentSuccessDescription">
+      <section class="payment-success-modal">
+        <button class="payment-success-close" id="closePaymentSuccess" type="button" aria-label="Tutup">&times;</button>
+        <span class="payment-success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></svg></span>
+        <span class="payment-success-kicker">PENGAJUAN PEMBAYARAN</span>
+        <h2 id="paymentSuccessTitle">Bukti pembayaran terkirim</h2>
+        <p id="paymentSuccessDescription">Bukti transfer Anda berhasil dikirim dan sedang menunggu verifikasi admin. Statusnya dapat dipantau di riwayat pembayaran.</p>
+        <button class="button button-dark" id="paymentSuccessDone" type="button">Mengerti</button>
+      </section>
+    </div>
+    <script type="module" src="./console.js"></script>
+  </body>
+</html>

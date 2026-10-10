@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8f4" />
+    <title>Dashboard Admin — SPPG Smart</title>
+    <link rel="icon" href="./assets/sppg-smart.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body data-page="admin" class="admin-body">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a class="admin-brand" href="./index.html">
+          <img src="./assets/sppg-smart.svg" alt="" />
+          <span>SPPG <b>Smart</b><small>CONTROL PANEL</small></span>
+        </a>
+        <div class="sidebar-caption">MENU UTAMA</div>
+        <nav class="admin-nav" aria-label="Navigasi admin">
+          <a class="admin-nav-link active" href="#overview"><span aria-hidden="true">▦</span>Dashboard</a>
+          <a class="admin-nav-link" href="#customers"><span aria-hidden="true">♙</span>Pelanggan & website</a>
+          <a class="admin-nav-link" href="#payments"><span aria-hidden="true">↻</span>Pengajuan pembayaran</a>
+          <a class="admin-nav-link" href="./index.html#sppg-pengguna"><span aria-hidden="true">↗</span>Landing page</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="admin-profile-mark">RA</div>
+          <div class="admin-profile-copy"><strong>Super Admin</strong><span id="sidebarAdminEmail">rahmatdev09@gmail.com</span></div>
+          <button class="sidebar-logout" id="adminSignOut" type="button" aria-label="Keluar" title="Keluar">↪</button>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-topbar">
+          <div><span>SPPG SMART</span><b>/</b><span>Panel Admin</span></div>
+          <a href="./index.html">Lihat landing page <span aria-hidden="true">↗</span></a>
+        </header>
+        <div class="admin-content">
+          <div class="account-loading account-loading-admin" id="adminLoading" role="status" aria-live="polite" aria-label="Memuat panel admin">
+            <div class="loading-heading"><span class="loading-indicator" aria-hidden="true"></span><div><strong>Menyiapkan panel admin</strong><span>Memeriksa akses dan memuat data terbaru.</span></div></div>
+            <div class="loading-skeleton-grid loading-skeleton-grid-four" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="loading-skeleton-card" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <div class="account-error hidden" id="adminError" role="alert"></div>
+
+          <div class="hidden" id="adminDashboard">
+            <section class="admin-overview" id="overview">
+              <div class="admin-heading">
+                <div><div class="eyebrow">RINGKASAN LAYANAN</div><h1>Dashboard</h1><p>Pantau pelanggan, status website, dan paket SPPG Smart.</p></div>
+              <a class="button button-dark" href="#customers">Kelola pelanggan <span aria-hidden="true">→</span></a>
+              </div>
+              <div class="admin-stat-grid">
+                <article class="admin-stat-card"><span class="admin-stat-icon stat-green">♙</span><span class="admin-stat-label">TOTAL PELANGGAN</span><strong id="userCount">—</strong><small>akun terdaftar</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-icon stat-gold">✦</span><span class="admin-stat-label">PAKET PREMIUM</span><strong id="premiumCount">—</strong><small>pelanggan Premium</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-icon stat-blue">◷</span><span class="admin-stat-label">DALAM PERSIAPAN</span><strong id="preparingCount">—</strong><small>website diproses</small></article>
+                <article class="admin-stat-card"><span class="admin-stat-icon stat-purple">↗</span><span class="admin-stat-label">WEBSITE SIAP</span><strong id="readyCount">—</strong><small id="publicCount">0 ditampilkan publik</small></article>
+              </div>
+              <div class="admin-analytics-grid">
+                <section class="admin-analytics-card" aria-labelledby="userGrowthTitle">
+                  <div class="admin-analytics-heading"><div><span class="feature-kicker">PERTUMBUHAN AKUN</span><h2 id="userGrowthTitle">Pengguna baru</h2></div><strong id="userGrowthTotal">0 akun</strong></div>
+                  <div id="userGrowthChart" class="admin-bar-chart" role="img" aria-label="Grafik jumlah pengguna baru per bulan"></div>
+                </section>
+                <section class="admin-analytics-card" aria-labelledby="revenueTitle">
+                  <div class="admin-analytics-heading"><div><span class="feature-kicker">PEMBAYARAN TERVERIFIKASI</span><h2 id="revenueTitle">Pendapatan</h2></div><strong id="revenueTotal">Rp0</strong></div>
+                  <div id="revenueChart" class="admin-bar-chart revenue-chart" role="img" aria-label="Grafik pendapatan terverifikasi per bulan"></div>
+                </section>
+              </div>
+              <section class="admin-recent-card">
+                <div class="admin-recent-heading"><div><span class="feature-kicker">AKTIVITAS TERBARU</span><h2>Pelanggan terbaru</h2></div><a href="#customers">Lihat semua <span aria-hidden="true">→</span></a></div>
+                <div id="recentAccounts" class="recent-account-list"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pelanggan terbaru...</div></div>
+              </section>
+              <section class="admin-recent-card payment-admin-card"><div class="admin-recent-heading"><div><span class="feature-kicker">TRANSFER MANUAL</span><h2>Pengajuan terbaru</h2></div><a href="#payments">Lihat pengajuan <span aria-hidden="true">→</span></a></div><div class="payment-admin-summary" id="paymentAdminSummary"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pengajuan pembayaran...</div></div></section>
+            </section>
+
+            <section class="admin-customers-view hidden" id="customers">
+              <div class="admin-heading customer-page-heading"><div><div class="eyebrow">MANAJEMEN AKUN</div><h1>Pelanggan & website</h1><p>Kelola informasi website, foto, paket, status, dan konfigurasi Firebase.</p></div><span class="admin-live"><i></i> Sinkron</span></div>
+              <p class="showcase-sync-notice hidden" id="showcaseSyncNotice" role="status"></p>
+              <div class="customer-toolbar"><label for="customerSearch">Cari pelanggan</label><input id="customerSearch" type="search" placeholder="Nama, email, domain, atau project ID" /><span id="customerResultCount"><span class="loading-indicator loading-indicator-small" aria-label="Memuat"></span></span></div>
+              <div class="customer-list-header"><span>Pelanggan</span><span>Website / domain</span><span>Paket</span><span>Status</span><span>Tanggal daftar / Premium</span><span>Aksi</span></div>
+              <div class="customer-list" id="userRows"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat data pelanggan...</div></div>
+              <div class="customer-pagination" id="customerPagination"><span id="customerPageSummary">Memuat data...</span><label>Baris per halaman<select id="customerPageSize"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label><div><button type="button" id="customerPrevPage">Sebelumnya</button><span id="customerPageNumber">1 / 1</span><button type="button" id="customerNextPage">Berikutnya</button></div></div>
+              <p class="admin-note">Tombol Konfigurasi Firebase menyimpan konfigurasi Web App pelanggan. Project tetap dibuat admin di Firebase Console, dan aplikasi luar belum otomatis memakai konfigurasi tenant ini sampai integrasi tenant selesai.</p>
+            </section>
+
+            <section class="admin-customers-view hidden" id="payments">
+              <div class="admin-heading customer-page-heading"><div><div class="eyebrow">TINJAUAN TRANSAKSI</div><h1>Pengajuan pembayaran</h1><p>Periksa bukti transfer BSI customer, lalu setujui atau tolak pengajuan.</p></div><span class="admin-live"><i></i> Transfer manual</span></div>
+              <div class="payment-admin-summary" id="paymentRequestList"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pengajuan pembayaran...</div></div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="admin-modal-overlay hidden" id="customerEditModal" role="dialog" aria-modal="true" aria-labelledby="customerEditTitle">
+      <div class="admin-config-modal customer-edit-modal">
+        <div class="admin-modal-heading"><div><span class="feature-kicker">EDIT PELANGGAN</span><h2 id="customerEditTitle">Edit pelanggan</h2><p>Perubahan akan disimpan ke akun pelanggan.</p></div><button class="admin-modal-close" id="closeCustomerEdit" type="button" aria-label="Tutup">×</button></div>
+        <div id="customerEditSlot"></div>
+      </div>
+    </div>
+    <div class="admin-modal-overlay hidden" id="paymentProofModal" role="dialog" aria-modal="true" aria-labelledby="paymentProofModalTitle">
+      <div class="admin-config-modal payment-proof-modal"><div class="admin-modal-heading"><div><span class="feature-kicker">BUKTI PEMBAYARAN</span><h2 id="paymentProofModalTitle">Bukti transfer</h2><p>Periksa detail bukti sebelum memperbarui status.</p></div><button class="admin-modal-close" id="closePaymentProof" type="button" aria-label="Tutup">×</button></div><img id="paymentProofModalImage" alt="Bukti transfer" /></div>
+    </div>
+    <div class="admin-modal-overlay hidden" id="customerViewModal" role="dialog" aria-modal="true" aria-labelledby="customerViewTitle">
+      <div class="admin-config-modal customer-view-modal">
+        <div class="admin-modal-heading"><div><span class="feature-kicker">RINGKASAN AKUN</span><h2 id="customerViewTitle">Detail pelanggan</h2><p>Informasi akun dan website pelanggan.</p></div><button class="admin-modal-close" id="closeCustomerView" type="button" aria-label="Tutup">×</button></div>
+        <div class="customer-view-content" id="customerViewContent"></div>
+      </div>
+    </div>
+    <div class="admin-modal-overlay hidden" id="firebaseConfigModal" role="dialog" aria-modal="true" aria-labelledby="firebaseModalTitle">
+      <form class="admin-config-modal" id="firebaseConfigForm">
+        <div class="admin-modal-heading"><div><span class="feature-kicker">FIREBASE TENANT</span><h2 id="firebaseModalTitle">Konfigurasi Firebase</h2><p id="firebaseConfigCustomer">Pelanggan</p></div><button class="admin-modal-close" id="closeFirebaseModal" type="button" aria-label="Tutup">×</button></div>
+        <div class="firebase-config-fields">
+          <label>API key<input id="tenantApiKey" name="apiKey" type="text" autocomplete="off" required /></label>
+          <label>Auth domain<input id="tenantAuthDomain" name="authDomain" type="text" placeholder="project-id.firebaseapp.com" required /></label>
+          <label class="tenant-super-admin-field">Email Super Admin MBG<input id="tenantSuperAdminEmail" name="superAdminEmail" type="email" autocomplete="email" placeholder="admin@domain.com" required /></label>
+          <label>Project ID<input id="tenantProjectId" name="projectId" type="text" required /></label>
+          <label>Storage bucket<input id="tenantStorageBucket" name="storageBucket" type="text" placeholder="project-id.firebasestorage.app" /></label>
+          <label>Messaging sender ID<input id="tenantMessagingSenderId" name="messagingSenderId" type="text" /></label>
+          <label>App ID<input id="tenantAppId" name="appId" type="text" required /></label>
+          <label>Measurement ID <span>(opsional)</span><input id="tenantMeasurementId" name="measurementId" type="text" placeholder="G-XXXXXXXXXX" /></label>
+        </div>
+        <div class="admin-config-error hidden" id="tenantConfigError" role="alert"></div>
+        <p class="admin-config-note">Saat disimpan, email ini dibuat sebagai Super Admin pada collection <code>app_users</code> di project MBG dan project website customer. Login Google harus memiliki role Super Admin aktif pada masing-masing project; rules Firebase project customer harus mengizinkan pengelolaan akun. Jangan masukkan service account key.</p>
+        <div class="admin-modal-actions"><button class="button button-light" id="cancelFirebaseConfig" type="button">Batal</button><button class="button button-dark" id="saveFirebaseConfig" type="submit">Simpan konfigurasi</button></div>
+      </form>
+    </div>
+    <script type="module" src="./admin.js"></script>
+  </body>
+</html>

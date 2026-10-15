@@ -5,6 +5,11 @@ import { accountCollection, auth, controlAdminEmail, db, googleProvider } from "
 const toast = document.getElementById("toast");
 const loginButtons = ["googleLogin", "heroLogin", "priceLogin", "closingLogin"]
   .map((id) => document.getElementById(id)).filter(Boolean);
+const headerActions = document.getElementById("headerActions");
+const authHeaderLoading = document.getElementById("authHeaderLoading");
+const accountLink = document.getElementById("accountLink");
+const signupLink = document.getElementById("signupLink");
+const googleLoginButton = document.getElementById("googleLogin");
 const signupForm = document.getElementById("signupForm");
 const sppgNameInput = document.getElementById("sppgNameInput");
 const websiteNameInput = document.getElementById("websiteNameInput");
@@ -18,6 +23,51 @@ const signupButton = document.getElementById("signupGoogle");
 const customerSites = document.getElementById("customerSites");
 let checkedDomain = "";
 let domainIsAvailable = false;
+let authHeaderState = "checking";
+
+function showAuthHeader(state) {
+  authHeaderState = state;
+  document.body.classList.toggle("auth-check-pending", state === "checking");
+  const hasAccount = state === "account";
+  authHeaderLoading?.classList.toggle("hidden", state !== "checking");
+  headerActions?.classList.toggle("auth-header-pending", state === "checking");
+  accountLink?.classList.toggle("hidden", !hasAccount);
+  signupLink?.classList.toggle("hidden", state === "checking" || hasAccount);
+  googleLoginButton?.classList.toggle("hidden", state === "checking" || hasAccount);
+  for (const element of [accountLink, signupLink, googleLoginButton]) {
+    element?.setAttribute("aria-hidden", element.classList.contains("hidden") ? "true" : "false");
+  }
+  for (const button of loginButtons) {
+    if (button.id === "googleLogin") continue;
+    if (state === "checking") buttonLoading(button, "Memeriksa akun...");
+    else if (hasAccount) { button.dataset.openAccount = "true"; button.innerHTML = "Buka akun"; button.disabled = false; }
+    else { delete button.dataset.openAccount; restoreLoginButton(button); }
+  }
+}
+
+function buttonLoading(button, label) {
+  if (!button) return;
+  if (!button.dataset.idleHtml) button.dataset.idleHtml = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = `<span class="loading-indicator loading-indicator-small${button.classList.contains("button-dark") ? " loading-indicator-light" : ""}" aria-hidden="true"></span>${label}`;
+}
+
+function restoreLoginButton(button) {
+  if (!button) return;
+  if (button.dataset.openAccount === "true") {
+    button.innerHTML = "Buka akun";
+    button.disabled = false;
+    return;
+  }
+  button.innerHTML = button.dataset.idleHtml || button.innerHTML;
+  button.disabled = false;
+}
+
+function openAccount(button) {
+  if (!button || button.disabled) return;
+  buttonLoading(button, "Membuka akun...");
+  window.setTimeout(() => window.location.assign("./console.html"), 120);
+}
 
 function showToast(message) {
   toast.textContent = message;
@@ -86,7 +136,7 @@ function renderCustomerSites(snapshot) {
         link.href = url.href;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        link.textContent = "Kunjungi website ↗";
+        link.textContent = "Kunjungi website â†—";
         const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         arrow.setAttribute("viewBox", "0 0 20 20");
         arrow.setAttribute("aria-hidden", "true");
@@ -119,18 +169,23 @@ function validDomainLabel(value) {
 }
 
 function setDomainStatus(state, title, detail) {
-  const icons = { idle: "?", checking: "…", available: "✓", unavailable: "×", error: "!" };
+  const icons = {
+    idle: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4M11 8v6m0 3h.01"/></svg>',
+    checking: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>',
+    available: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>',
+    unavailable: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+    error: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5m0 3h.01"/><path d="M10.3 3.8 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3l-7.5-13.2a2 2 0 0 0-3.4 0Z"/></svg>',
+  };
   domainMessage.className = `domain-result domain-result-${state}`;
-  domainStatusIcon.textContent = icons[state] || "!";
+  domainStatusIcon.innerHTML = icons[state] || icons.error;
   domainStatusTitle.textContent = title;
   domainStatusDetail.textContent = detail;
 }
-
 function resetDomainCheck() {
   checkedDomain = "";
   domainIsAvailable = false;
   signupButton.disabled = true;
-  setDomainStatus("idle", "BELUM DICEK", "Masukkan nama domain, lalu tekan “Cek nama”.");
+  setDomainStatus("idle", "BELUM DICEK", "Masukkan nama domain, lalu tekan â€œCek namaâ€.");
 }
 
 async function checkDomain() {
@@ -138,7 +193,7 @@ async function checkDomain() {
   domainNameInput.value = label;
   resetDomainCheck();
   if (!validDomainLabel(label)) {
-    setDomainStatus("error", "FORMAT BELUM SESUAI", "Gunakan 3–63 karakter: huruf kecil, angka, atau tanda hubung di tengah.");
+    setDomainStatus("error", "FORMAT BELUM SESUAI", "Gunakan 3â€“63 karakter: huruf kecil, angka, atau tanda hubung di tengah.");
     return false;
   }
   checkDomainButton.disabled = true;
@@ -192,8 +247,10 @@ async function accountFor(user) {
   return snapshot.exists() ? snapshot.data() : null;
 }
 
-async function login() {
-  loginButtons.forEach((button) => { button.disabled = true; });
+async function login(button) {
+  if (button?.dataset.openAccount === "true") { openAccount(button); return; }
+  loginButtons.forEach((item) => { item.disabled = true; });
+  buttonLoading(button, "Membuka Google...");
   try {
     const user = auth.currentUser || (await signInWithPopup(auth, googleProvider)).user;
     let account = await accountFor(user);
@@ -220,7 +277,7 @@ async function login() {
   } catch (error) {
     showToast(`Login gagal: ${error.message}`);
   } finally {
-    loginButtons.forEach((button) => { button.disabled = false; });
+    loginButtons.forEach(restoreLoginButton);
   }
 }
 
@@ -242,12 +299,12 @@ signupForm.addEventListener("submit", async (event) => {
   if (!websiteName) return showToast("Isi nama website terlebih dahulu.");
   if (!validDomainLabel(label)) return showToast("Nama domain belum valid.");
   const domain = `${label}.online`;
-  const available = await checkDomain();
-  if (!available || checkedDomain !== domain) return;
-
-  signupButton.disabled = true;
-  signupButton.innerHTML = '<span class="loading-indicator loading-indicator-small loading-indicator-light" aria-hidden="true"></span> Membuat akun';
+  if (!signupButton.dataset.idleHtml) signupButton.dataset.idleHtml = signupButton.innerHTML;
+  buttonLoading(signupButton, "Menyiapkan pendaftaran...");
   try {
+    const available = await checkDomain();
+    if (!available || checkedDomain !== domain) return;
+    buttonLoading(signupButton, "Membuka Google...");
     const user = auth.currentUser || (await signInWithPopup(auth, googleProvider)).user;
     const email = String(user.email || "").trim().toLowerCase();
     if (!email) throw new Error("Akun Google tidak memiliki email.");
@@ -279,29 +336,23 @@ signupForm.addEventListener("submit", async (event) => {
   } catch (error) {
     showToast(`Pendaftaran gagal: ${error.message}`);
   } finally {
-    signupButton.textContent = "Daftar dengan Google";
+    signupButton.innerHTML = signupButton.dataset.idleHtml || "Daftar dengan Google";
     signupButton.disabled = !(domainIsAvailable && sppgNameInput.value.trim() && websiteNameInput.value.trim());
   }
 });
 
-loginButtons.forEach((button) => button.addEventListener("click", login));
+loginButtons.forEach((button) => button.addEventListener("click", () => login(button)));
+accountLink?.addEventListener("click", (event) => { event.preventDefault(); openAccount(accountLink); });
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
+  showAuthHeader("checking");
+  if (!user) { showAuthHeader("guest"); return; }
   try {
     const account = await accountFor(user);
-    if (!account || account.active !== true) return;
-    document.getElementById("accountLink")?.classList.remove("hidden");
-    document.getElementById("signupLink")?.classList.add("hidden");
-    document.getElementById("googleLogin")?.classList.add("hidden");
-    for (const id of ["heroLogin", "priceLogin", "closingLogin"]) {
-      const button = document.getElementById(id);
-      if (button) {
-        button.textContent = "Buka Akun ↗";
-        button.addEventListener("click", () => window.location.assign("./console.html"));
-      }
-    }
+    if (!account || account.active !== true) { showAuthHeader("guest"); return; }
+    showAuthHeader("account");
   } catch (error) {
+    showAuthHeader("guest");
     showToast(`Akun tidak dapat dimuat: ${error.message}`);
   }
 });

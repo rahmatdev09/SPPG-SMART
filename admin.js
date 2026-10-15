@@ -1,6 +1,6 @@
 import { onAuthStateChanged, signInWithPopup, signInWithPopup as signInWithPopupForAppUsers, signOut, GoogleAuthProvider, getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { collection, onSnapshot, doc, writeBatch, getDoc, updateDoc, setDoc, serverTimestamp, getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, onSnapshot, doc, writeBatch, getDoc, updateDoc, setDoc, serverTimestamp, Timestamp, getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { accountCollection, auth, controlAdminEmail, db, googleProvider } from "./firebase.js";
 
 // Main MBG application project shown in its Firebase Console (projectId sppg-abc46).
@@ -97,8 +97,27 @@ let firebaseConfigAccount = null;
 let customerSearchTerm = "";
 let customersPage = 1;
 let unsubscribePaymentRequests = null;
+let unsubscribePaymentOrders = null;
 let dashboardCustomers = [];
 let dashboardPaymentRequests = [];
+
+document.getElementById("saveDemoPackageSetting")?.addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  const checkbox = document.getElementById("demoPackageVisible");
+  const status = document.getElementById("demoPackageSettingStatus");
+  button.disabled = true;
+  status.textContent = "Menyimpan...";
+  try {
+    await setDoc(doc(db, "public_settings", "demo_package"), {
+      demoVisible: checkbox.checked,
+      updatedAt: serverTimestamp(),
+      updatedBy: String(auth.currentUser?.email || "").trim().toLowerCase(),
+    }, { merge: true });
+    status.textContent = checkbox.checked ? "Paket demo ditampilkan." : "Paket demo disembunyikan.";
+  } catch (error) {
+    status.textContent = error.code === "permission-denied" ? "Akses ditolak. Pastikan aturan public_settings terbaru sudah dipublikasikan." : `Gagal menyimpan: ${error.message}`;
+  } finally { button.disabled = false; }
+});
 
 function showError(message, offerLogin = false) {
   errorBox.replaceChildren(document.createTextNode(message));
@@ -335,23 +354,25 @@ function renderPaymentRequests(snapshot) {
   const pending = snapshot.docs.filter((item) => item.data().status === "pending").length;
   dashboardPaymentRequests = snapshot.docs.map((item) => item.data());
   renderDashboardCharts();
-  summary.textContent = `${pending} pengajuan menunggu verifikasi · ${snapshot.size} total pengajuan transfer`;
+  summary.textContent = `${pending} pengajuan menunggu verifikasi · ${snapshot.size} total pengajuan QRIS`;
   target.replaceChildren();
   if (snapshot.empty) {
     const empty = document.createElement("div"); empty.className = "empty-row"; empty.textContent = "Belum ada pengajuan pembayaran."; target.append(empty); return;
   }
   for (const item of snapshot.docs) {
     const request = item.data();
-    const validTransferRequest = request.paymentMethod === "manual_bsi_transfer" && typeof request.proofDataUrl === "string" && request.proofDataUrl.startsWith("data:image/jpeg;base64,");
+    const validTransferRequest = ["manual_qris", "manual_bsi_transfer"].includes(request.paymentMethod) && typeof request.proofDataUrl === "string" && request.proofDataUrl.startsWith("data:image/jpeg;base64,");
     const card = document.createElement("article"); card.className = "payment-request-card";
     const info = document.createElement("div"); info.className = "payment-request-info";
     const name = document.createElement("strong"); name.textContent = request.displayName || request.email || "Pelanggan";
     const meta = document.createElement("span"); meta.textContent = `${request.email || "-"} · ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(request.amount || 150000)}`;
-    const note = document.createElement("small"); note.textContent = `Nama pengirim: ${request.note || "Tidak dicantumkan"}`;
+    const billingLabel = request.billingPeriod === "yearly" ? "Paket 1 tahun" : "Paket 1 bulan";
+    const period = document.createElement("small"); period.textContent = `${billingLabel}${request.uniqueCode ? ` · kode unik ${request.uniqueCode}` : ""}`;
+    const note = document.createElement("small"); note.textContent = `Nama pada pembayaran: ${request.note || "Tidak dicantumkan"}`;
     const submittedAt = document.createElement("small");
     submittedAt.className = "payment-request-time";
     submittedAt.textContent = `Diajukan: ${formatPaymentTimestamp(request.createdAt)}`;
-    info.append(name, meta, note, submittedAt);
+    info.append(name, meta, period, note, submittedAt);
     if (request.reviewedAt) {
       const reviewedAt = document.createElement("small");
       reviewedAt.className = "payment-request-time";
@@ -374,10 +395,16 @@ function renderPaymentRequests(snapshot) {
         try {
           if (status === "received") {
             const accountRef = doc(db, accountCollection, request.email);
-            const batch = writeBatch(db);
             const approvedAt = new Date();
-            const expiry = new Date(approvedAt); expiry.setDate(expiry.getDate() + 30); expiry.setHours(23, 59, 59, 999);
-            batch.update(accountRef, { plan: "premium", hostingStatus: "preparing", premiumPaidAt: approvedAt.toISOString(), premiumExpiresAt: expiry.toISOString(), websiteExpiresAt: expiry.toISOString(), planUpdatedAt: approvedAt.toISOString(), hostingUpdatedAt: approvedAt.toISOString() });
+            const accountSnapshot = await getDoc(accountRef);
+            const currentExpiry = accountSnapshot.exists() && accountSnapshot.data().plan === "premium" ? new Date(accountSnapshot.data().premiumExpiresAt || 0) : null;
+            const expiryBase = currentExpiry && currentExpiry > approvedAt ? currentExpiry : approvedAt;
+            const expiry = new Date(expiryBase);
+            if (request.billingPeriod === "yearly") expiry.setFullYear(expiry.getFullYear() + 1);
+            else expiry.setDate(expiry.getDate() + 30);
+            expiry.setHours(23, 59, 59, 999);
+            const batch = writeBatch(db);
+            batch.update(accountRef, { plan: "premium", premiumBillingPeriod: request.billingPeriod || "monthly", hostingStatus: "preparing", premiumPaidAt: approvedAt.toISOString(), premiumExpiresAt: expiry.toISOString(), premiumExpiresAtTimestamp: Timestamp.fromDate(expiry), websiteExpiresAt: expiry.toISOString(), planUpdatedAt: approvedAt.toISOString(), hostingUpdatedAt: approvedAt.toISOString() });
             batch.update(doc(db, "payment_requests", item.id), { status, reviewedBy: auth.currentUser?.email || "", reviewedAt: serverTimestamp(), updatedAt: serverTimestamp() });
             await batch.commit();
           } else {
@@ -386,7 +413,7 @@ function renderPaymentRequests(snapshot) {
         }
         catch (error) {
           button.disabled = false;
-          console.error("Gagal memperbarui pengajuan transfer:", error);
+          console.error("Gagal memperbarui pengajuan QRIS:", error);
           const reason = error.code === "permission-denied"
             ? "Akses Firestore ditolak. Publikasikan aturan terbaru dari landing-page/firestore.rules ke project sppg-smart, lalu coba lagi."
             : error.code === "not-found"
@@ -398,6 +425,70 @@ function renderPaymentRequests(snapshot) {
       actions.append(button);
     }
     card.append(info, badge, actions); target.append(card);
+  }
+}
+
+function renderCustomerPaymentOrders(snapshot) {
+  const target = document.getElementById("customerPaymentOrders");
+  if (!target) return;
+  target.replaceChildren();
+  if (snapshot.empty) {
+    const empty = document.createElement("div"); empty.className = "empty-row"; empty.textContent = "Belum ada pesanan QRIS."; target.append(empty); return;
+  }
+  const orders = [...snapshot.docs].sort((a, b) => (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0));
+  for (const item of orders) {
+    const order = item.data();
+    const demo = order.billingPeriod === "demo_10m";
+    const expired = order.status === "pending" && (order.expiresAt?.toDate?.()?.getTime?.() || 0) <= Date.now();
+    const card = document.createElement("article"); card.className = "payment-request-card";
+    const info = document.createElement("div"); info.className = "payment-request-info";
+    const name = document.createElement("strong"); name.textContent = order.displayName || order.email || "Pelanggan";
+    const details = document.createElement("span"); details.textContent = `${order.email || "-"} · ${new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(order.amount || 0)}`;
+    const packageInfo = document.createElement("small"); packageInfo.textContent = `Paket ${demo ? "Demo 10 menit" : order.billingPeriod === "yearly" ? "1 tahun" : "1 bulan"} · kode unik ${order.uniqueCode || 0}`;
+    const created = document.createElement("small"); created.className = "payment-request-time"; created.textContent = `Dibuat ${formatPaymentTimestamp(order.createdAt)} · batas bayar ${formatPaymentTimestamp(order.expiresAt)}`;
+    info.append(name, details, packageInfo, created);
+    const status = document.createElement("span"); status.className = `payment-request-status status-${expired ? "expired" : order.status || "pending"}`;
+    status.textContent = expired ? "Kedaluwarsa" : ({ pending: "Menunggu verifikasi", paid: "Terverifikasi", failed: "Gagal", expired: "Kedaluwarsa", cancelled: "Dibatalkan", successful: "Berhasil", succeeded: "Berhasil" })[order.status] || order.status || "Menunggu";
+    status.classList.add("payment-request-status-top");
+    const actions = document.createElement("div"); actions.className = "payment-request-actions";
+    if (order.status === "pending" && !expired) {
+      const approve = document.createElement("button"); approve.type = "button"; approve.className = "button button-config"; approve.textContent = "Verifikasi pembayaran";
+      const feedback = document.createElement("small"); feedback.className = "payment-request-time";
+      approve.addEventListener("click", async () => {
+        approve.disabled = true; approve.textContent = "Memverifikasi...";
+        try {
+          const currentOrder = await getDoc(doc(db, "payment_orders", item.id));
+          if (!currentOrder.exists() || currentOrder.data().status !== "pending") throw new Error("Pesanan sudah diproses atau tidak ditemukan.");
+          const currentData = currentOrder.data();
+          if ((currentData.expiresAt?.toDate?.()?.getTime?.() || 0) <= Date.now()) throw new Error("Batas pembayaran 24 jam sudah berakhir.");
+          const accountRef = doc(db, accountCollection, currentData.email);
+          const accountSnapshot = await getDoc(accountRef);
+          if (!accountSnapshot.exists()) throw new Error("Akun pelanggan tidak ditemukan.");
+          const approvedAt = new Date();
+          const account = accountSnapshot.data();
+          const activeExpiry = account.premiumExpiresAtTimestamp?.toDate?.() || (account.premiumExpiresAt ? new Date(account.premiumExpiresAt) : null);
+          const base = activeExpiry && activeExpiry > approvedAt ? activeExpiry : approvedAt;
+          const expiry = new Date(base);
+          if (demo) expiry.setTime(approvedAt.getTime() + 10 * 60 * 1000);
+          else if (currentData.billingPeriod === "yearly") expiry.setFullYear(expiry.getFullYear() + 1);
+          else expiry.setDate(expiry.getDate() + 30);
+          if (!demo) expiry.setHours(23, 59, 59, 999);
+          const batch = writeBatch(db);
+          batch.update(accountRef, {
+            plan: "premium", premiumBillingPeriod: currentData.billingPeriod,
+            hostingStatus: "preparing", premiumPaidAt: approvedAt.toISOString(),
+            premiumExpiresAt: expiry.toISOString(), premiumExpiresAtTimestamp: Timestamp.fromDate(expiry),
+            websiteExpiresAt: expiry.toISOString(), planUpdatedAt: approvedAt.toISOString(), hostingUpdatedAt: approvedAt.toISOString(),
+          });
+          batch.update(doc(db, "payment_orders", item.id), { status: "paid", paidAt: serverTimestamp(), updatedAt: serverTimestamp() });
+          await batch.commit();
+        } catch (error) {
+          approve.disabled = false; approve.textContent = "Verifikasi pembayaran"; feedback.textContent = error.message || "Gagal memverifikasi pembayaran.";
+        }
+      });
+      actions.append(approve, feedback);
+    }
+    card.append(info, status, actions); target.append(card);
   }
 }
 
@@ -414,8 +505,8 @@ function openPaymentProof(imageUrl, customerName) {
   const image = document.getElementById("paymentProofModalImage");
   const title = document.getElementById("paymentProofModalTitle");
   image.src = imageUrl;
-  image.alt = `Bukti transfer ${customerName}`;
-  title.textContent = `Bukti transfer · ${customerName}`;
+  image.alt = `Bukti pembayaran ${customerName}`;
+  title.textContent = `Bukti pembayaran · ${customerName}`;
   overlay.classList.remove("hidden");
 }
 
@@ -476,10 +567,40 @@ function openCustomerView(account) {
     item.append(title, detail); grid.append(item);
   }
   content.append(grid);
+  content.append(createAdminWebsiteTimeline(account));
   if (isHttpUrl(account.websiteUrl || "")) {
     const link = document.createElement("a"); link.className = "button button-dark customer-view-visit"; link.href = account.websiteUrl; link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = "Kunjungi website"; content.append(link);
   }
   document.getElementById("customerViewModal").classList.remove("hidden");
+}
+
+function adminWebsiteTimelineSteps(account) {
+  const saved = account.websiteTimeline || {};
+  const firebase = account.tenantFirebaseStatus || (account.tenantFirebaseConfig || account.tenantProjectId || account.hostingStatus === "ready" ? "active" : "not_configured");
+  return [
+    { key: "hosting", title: "Persiapan hosting", state: saved.hosting || (account.hostingStatus === "ready" ? "complete" : ["preparing", "configuring"].includes(account.hostingStatus) ? "in_progress" : "pending") },
+    { key: "database", title: "Persiapan database", state: saved.database || (firebase === "active" ? "complete" : account.hostingStatus === "ready" && (account.tenantProjectId || account.tenantFirebaseConfig || account.plan === "premium") ? "in_progress" : "pending") },
+    { key: "domain", title: "Menghubungkan ke domain", state: saved.domain || (account.hostingStatus === "ready" && account.domainName && account.websiteUrl ? "complete" : firebase === "active" && account.domainName ? "in_progress" : "pending") },
+  ];
+}
+
+function createAdminWebsiteTimeline(account) {
+  const panel = document.createElement("section"); panel.className = "admin-website-timeline";
+  const heading = document.createElement("div"); heading.className = "admin-website-timeline-heading";
+  const title = document.createElement("h3"); title.textContent = "Timeline website";
+  const note = document.createElement("p"); note.textContent = "Progres persiapan yang dikelola untuk pelanggan ini.";
+  heading.append(title, note); panel.append(heading);
+  const list = document.createElement("ol"); list.className = "website-timeline admin-timeline-list";
+  const labels = { complete: "Selesai", in_progress: "Sedang diproses", pending: "Menunggu" };
+  for (const step of adminWebsiteTimelineSteps(account)) {
+    const item = document.createElement("li"); item.className = `website-timeline-step is-${step.state}`;
+    const marker = document.createElement("span"); marker.className = "website-timeline-marker"; marker.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("div"); copy.className = "website-timeline-copy";
+    const name = document.createElement("strong"); name.textContent = step.title;
+    const state = document.createElement("span"); state.className = "website-timeline-state"; state.textContent = labels[step.state] || labels.pending;
+    copy.append(name); item.append(marker, copy, state); list.append(item);
+  }
+  panel.append(list); return panel;
 }
 
 function renderUsers(snapshot) {
@@ -647,6 +768,25 @@ function renderUsers(snapshot) {
     const expiryLabel = document.createElement("label"); expiryLabel.className = "customer-date-field"; expiryLabel.append(document.createTextNode("Tanggal habis Premium"), premiumExpiryDate);
     const websiteExpiryLabel = document.createElement("label"); websiteExpiryLabel.className = "customer-date-field"; websiteExpiryLabel.append(document.createTextNode("Masa berlaku website"), websiteExpiryDate);
     planCell.append(plan, status, accountAccess, paidLabel, expiryLabel, websiteExpiryLabel);
+    const timelineSection = document.createElement("section"); timelineSection.className = "website-timeline-editor";
+    const timelineHeading = document.createElement("div"); timelineHeading.className = "admin-website-timeline-heading";
+    const timelineTitle = document.createElement("h3"); timelineTitle.textContent = "Timeline penyiapan website";
+    const timelineDescription = document.createElement("p"); timelineDescription.textContent = "Perbarui setiap tahap agar pelanggan melihat progres terbaru.";
+    timelineHeading.append(timelineTitle, timelineDescription); timelineSection.append(timelineHeading);
+    const savedTimeline = account.websiteTimeline || {};
+    const timelineFirebase = account.tenantFirebaseStatus || (account.tenantFirebaseConfig || account.tenantProjectId || account.hostingStatus === "ready" ? "active" : "not_configured");
+    const timelineDefaults = {
+      hosting: account.hostingStatus === "ready" ? "complete" : ["preparing", "configuring"].includes(account.hostingStatus) ? "in_progress" : "pending",
+      database: timelineFirebase === "active" ? "complete" : account.hostingStatus === "ready" && (account.tenantProjectId || account.tenantFirebaseConfig || account.plan === "premium") ? "in_progress" : "pending",
+      domain: account.hostingStatus === "ready" && account.domainName && account.websiteUrl ? "complete" : timelineFirebase === "active" && account.domainName ? "in_progress" : "pending",
+    };
+    const timelineControls = {};
+    for (const [key, label] of [["hosting", "Persiapan hosting"], ["database", "Persiapan database"], ["domain", "Menghubungkan ke domain"]]) {
+      const field = document.createElement("label"); field.className = "website-timeline-editor-field"; field.textContent = label;
+      const select = document.createElement("select"); select.className = "plan-select"; select.setAttribute("aria-label", `${label} untuk ${account.email}`);
+      for (const [value, optionLabel] of [["pending", "Belum dimulai"], ["in_progress", "Sedang diproses"], ["complete", "Selesai"]]) { const option = document.createElement("option"); option.value = value; option.textContent = optionLabel; option.selected = (savedTimeline[key] || timelineDefaults[key]) === value; select.append(option); }
+      timelineControls[key] = select; field.append(select); timelineSection.append(field);
+    }
     plan.addEventListener("change", () => {
       if (plan.value === "premium" && account.plan !== "premium" && !premiumPaidDate.value) premiumPaidDate.value = new Date().toISOString().slice(0, 10);
     });
@@ -678,7 +818,7 @@ function renderUsers(snapshot) {
         const websiteUrlValue = parsedWebsite.websiteUrl;
         const sppgNameValue = sppgNameInput.value.trim();
         if (normalizedDomain && !isOnlineDomain(normalizedDomain)) throw new Error("Domain website harus berakhiran .online.");
-        const update = { active: accountAccess.value === "active", plan: plan.value, hostingStatus: plan.value === "premium" ? status.value : "not_purchased", tenantFirebaseStatus: firebaseStatus.value, sppgName: sppgNameValue, websiteName: websiteNameValue, domainName: normalizedDomain, websiteUrl: websiteUrlValue, websiteImageBase64: imageDataValue, publicShowcase: showcase.checked, premiumPaidAt: plan.value === "premium" ? premiumPaidDate.value : "", premiumExpiresAt: plan.value === "premium" ? premiumExpiryDate.value : "", websiteExpiresAt: websiteExpiryDate.value, planUpdatedAt: now, hostingUpdatedAt: now };
+        const update = { active: accountAccess.value === "active", plan: plan.value, hostingStatus: plan.value === "premium" ? status.value : "not_purchased", tenantFirebaseStatus: firebaseStatus.value, websiteTimeline: { hosting: timelineControls.hosting.value, database: timelineControls.database.value, domain: timelineControls.domain.value }, websiteTimelineUpdatedAt: now, sppgName: sppgNameValue, websiteName: websiteNameValue, domainName: normalizedDomain, websiteUrl: websiteUrlValue, websiteImageBase64: imageDataValue, publicShowcase: showcase.checked, premiumPaidAt: plan.value === "premium" ? premiumPaidDate.value : "", premiumExpiresAt: plan.value === "premium" ? premiumExpiryDate.value : "", websiteExpiresAt: websiteExpiryDate.value, planUpdatedAt: now, hostingUpdatedAt: now };
         if (update.hostingStatus === "ready" && !isHttpUrl(update.websiteUrl)) throw new Error("Isi URL website lengkap, termasuk https://, sebelum menandai website siap.");
         if (showcase.checked && (!update.sppgName || !update.websiteName || !isOnlineDomain(update.domainName) || !isHttpUrl(update.websiteUrl))) throw new Error("Isi nama SPPG, nama website, domain .online, dan URL http/https yang valid untuk ditampilkan.");
         const domainRef = normalizedDomain ? doc(db, "domains", normalizedDomain) : null;
@@ -710,7 +850,7 @@ function renderUsers(snapshot) {
     const planTitle = document.createElement("h3"); planTitle.textContent = "Paket dan status"; planTitle.className = "customer-section-title"; planCell.prepend(planTitle);
     sections.append(siteCell, firebaseCell, planCell);
     actionCell.append(save);
-    const editBody = document.createElement("div"); editBody.className = "customer-edit-body"; editBody.append(sections, actionCell);
+    const editBody = document.createElement("div"); editBody.className = "customer-edit-body"; editBody.append(sections, timelineSection, actionCell);
     editButton.addEventListener("click", () => {
       document.getElementById("customerEditTitle").textContent = `Edit ${account.displayName || account.email || "pelanggan"}`;
       document.getElementById("customerEditSlot").replaceChildren(editBody);
@@ -744,7 +884,7 @@ function renderRecentAccounts(customers) {
 }
 
 onAuthStateChanged(auth, async (user) => {
-  unsubscribeUsers?.(); unsubscribeUsers = null; unsubscribePaymentRequests?.(); unsubscribePaymentRequests = null; panel.classList.add("hidden"); errorBox.classList.add("hidden");
+  unsubscribeUsers?.(); unsubscribeUsers = null; unsubscribePaymentRequests?.(); unsubscribePaymentRequests = null; unsubscribePaymentOrders?.(); unsubscribePaymentOrders = null; panel.classList.add("hidden"); errorBox.classList.add("hidden");
   signOutButton.classList.toggle("hidden", !user);
   if (!user) return showError("Login untuk mengelola pelanggan.", true);
   loading.classList.remove("hidden");
@@ -752,10 +892,20 @@ onAuthStateChanged(auth, async (user) => {
     const email = String(user.email || "").trim().toLowerCase();
     const accountSnapshot = await getDoc(doc(db, accountCollection, email));
     if (email !== controlAdminEmail || !accountSnapshot.exists() || accountSnapshot.data().active !== true || accountSnapshot.data().role !== "super_admin") return showError("Akses ditolak. Panel ini hanya untuk Super Admin yang ditetapkan.");
+    try {
+      const demoSettings = await getDoc(doc(db, "public_settings", "demo_package"));
+      document.getElementById("demoPackageVisible").checked = !demoSettings.exists() || demoSettings.data().demoVisible !== false;
+      document.getElementById("demoPackageSettingStatus").textContent = demoSettings.exists() ? "Pengaturan terakhir dimuat." : "Paket demo ditampilkan secara default.";
+    } catch (error) {
+      document.getElementById("demoPackageSettingStatus").textContent = `Pengaturan tidak dapat dimuat: ${error.message}`;
+    }
     unsubscribeUsers = onSnapshot(collection(db, accountCollection), (snapshot) => { renderUsers(snapshot); loading.classList.add("hidden"); panel.classList.remove("hidden"); }, (error) => showError(`Data pelanggan tidak dapat dimuat: ${error.message}`));
     unsubscribePaymentRequests = onSnapshot(collection(db, "payment_requests"), renderPaymentRequests, (error) => {
       document.getElementById("paymentAdminSummary").textContent = `Pengajuan belum dapat dimuat: ${error.message}`;
       document.getElementById("paymentRequestList").textContent = `Periksa aturan Firestore payment_requests. ${error.message}`;
+    });
+    unsubscribePaymentOrders = onSnapshot(collection(db, "payment_orders"), renderCustomerPaymentOrders, (error) => {
+      document.getElementById("customerPaymentOrders").textContent = `Pesanan QRIS belum dapat dimuat. Publikasikan aturan payment_orders terbaru. ${error.message}`;
     });
   } catch (error) { showError(`Role admin tidak dapat diverifikasi: ${error.message}`); }
 });

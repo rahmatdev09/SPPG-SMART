@@ -39,7 +39,7 @@
         </header>
         <div class="admin-content">
           <div class="account-loading account-loading-admin" id="adminLoading" role="status" aria-live="polite" aria-label="Memuat panel admin">
-            <div class="loading-heading"><span class="loading-indicator" aria-hidden="true"></span><div><strong>Menyiapkan panel admin</strong><span>Memeriksa akses dan memuat data terbaru.</span></div></div>
+            <div class="loading-heading"><img class="admin-loading-logo" src="./assets/sppg-smart-icon.svg" alt="" /><div><strong>Menyiapkan panel admin</strong><span>Memeriksa akses dan memuat data terbaru.</span></div></div>
             <div class="loading-skeleton-grid loading-skeleton-grid-four" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
             <div class="loading-skeleton-card" aria-hidden="true"><i></i><i></i><i></i></div>
           </div>
@@ -71,7 +71,7 @@
                 <div class="admin-recent-heading"><div><span class="feature-kicker">AKTIVITAS TERBARU</span><h2>Pelanggan terbaru</h2></div><a href="#customers">Lihat semua <span aria-hidden="true">→</span></a></div>
                 <div id="recentAccounts" class="recent-account-list"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pelanggan terbaru...</div></div>
               </section>
-              <section class="admin-recent-card payment-admin-card"><div class="admin-recent-heading"><div><span class="feature-kicker">TRANSFER MANUAL</span><h2>Pengajuan terbaru</h2></div><a href="#payments">Lihat pengajuan <span aria-hidden="true">→</span></a></div><div class="payment-admin-summary" id="paymentAdminSummary"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pengajuan pembayaran...</div></div></section>
+              <section class="admin-recent-card payment-admin-card"><div class="admin-recent-heading"><div><span class="feature-kicker">PEMBAYARAN QRIS</span><h2>Pengajuan terbaru</h2></div><a href="#payments">Lihat pengajuan <span aria-hidden="true">→</span></a></div><div class="payment-admin-summary" id="paymentAdminSummary"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pengajuan pembayaran...</div></div></section>
             </section>
 
             <section class="admin-customers-view hidden" id="customers">
@@ -85,13 +85,18 @@
             </section>
 
             <section class="admin-customers-view hidden" id="payments">
-              <div class="admin-heading customer-page-heading"><div><div class="eyebrow">TINJAUAN TRANSAKSI</div><h1>Pengajuan pembayaran</h1><p>Periksa bukti transfer BSI customer, lalu setujui atau tolak pengajuan.</p></div><span class="admin-live"><i></i> Transfer manual</span></div>
+              <div class="admin-heading customer-page-heading"><div><div class="eyebrow">TINJAUAN TRANSAKSI</div><h1>Pengajuan pembayaran</h1><p>Periksa bukti pembayaran QRIS customer, lalu setujui atau tolak pengajuan.</p></div><span class="admin-live"><i></i> QRIS</span></div>
+              <section class="admin-recent-card demo-package-admin-card" aria-labelledby="demoPackageAdminTitle"><div class="admin-recent-heading"><div><span class="feature-kicker">PENGATURAN PAKET</span><h2 id="demoPackageAdminTitle">Paket demo 10 menit</h2></div></div><p class="demo-package-admin-copy">Paket ini memberi akses Premium selama 10 menit setelah pembayaran Rp1.000 diverifikasi.</p><label class="demo-package-toggle"><input id="demoPackageVisible" type="checkbox" checked /><span class="demo-package-switch" aria-hidden="true"></span><span><strong>Tampilkan paket demo</strong><small>Jika dimatikan, pelanggan tidak dapat melihat atau memesan paket ini.</small></span></label><div class="demo-package-admin-actions"><button class="button button-dark" id="saveDemoPackageSetting" type="button">Simpan pengaturan</button><span id="demoPackageSettingStatus" role="status" aria-live="polite"></span></div></section>
+              <section class="admin-recent-card" aria-labelledby="customerPaymentOrdersTitle"><div class="admin-recent-heading"><div><span class="feature-kicker">VERIFIKASI QRIS</span><h2 id="customerPaymentOrdersTitle">Pesanan pembayaran</h2></div></div><p class="demo-package-admin-copy">Verifikasi pembayaran pada mutasi QRIS sebelum mengaktifkan paket pelanggan.</p><div class="payment-admin-summary" id="customerPaymentOrders"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pesanan QRIS...</div></div></section>
               <div class="payment-admin-summary" id="paymentRequestList"><div class="inline-loading" role="status"><span class="loading-indicator" aria-hidden="true"></span>Memuat pengajuan pembayaran...</div></div>
             </section>
           </div>
         </div>
       </main>
     </div>
+    <a class="contact-admin-fab" href="mailto:rahmatdev09@gmail.com?subject=Bantuan%20SPPG%20Smart" aria-label="Hubungi admin melalui email">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6.5a7.5 7.5 0 1 1 17 0Z"/><path d="M8 11.5h.01M12 11.5h.01M16 11.5h.01"/></svg><span>Hubungi admin</span>
+    </a>
     <div class="admin-modal-overlay hidden" id="customerEditModal" role="dialog" aria-modal="true" aria-labelledby="customerEditTitle">
       <div class="admin-config-modal customer-edit-modal">
         <div class="admin-modal-heading"><div><span class="feature-kicker">EDIT PELANGGAN</span><h2 id="customerEditTitle">Edit pelanggan</h2><p>Perubahan akan disimpan ke akun pelanggan.</p></div><button class="admin-modal-close" id="closeCustomerEdit" type="button" aria-label="Tutup">×</button></div>
@@ -99,7 +104,7 @@
       </div>
     </div>
     <div class="admin-modal-overlay hidden" id="paymentProofModal" role="dialog" aria-modal="true" aria-labelledby="paymentProofModalTitle">
-      <div class="admin-config-modal payment-proof-modal"><div class="admin-modal-heading"><div><span class="feature-kicker">BUKTI PEMBAYARAN</span><h2 id="paymentProofModalTitle">Bukti transfer</h2><p>Periksa detail bukti sebelum memperbarui status.</p></div><button class="admin-modal-close" id="closePaymentProof" type="button" aria-label="Tutup">×</button></div><img id="paymentProofModalImage" alt="Bukti transfer" /></div>
+      <div class="admin-config-modal payment-proof-modal"><div class="admin-modal-heading"><div><span class="feature-kicker">BUKTI PEMBAYARAN</span><h2 id="paymentProofModalTitle">Bukti pembayaran</h2><p>Periksa detail bukti sebelum memperbarui status.</p></div><button class="admin-modal-close" id="closePaymentProof" type="button" aria-label="Tutup">×</button></div><img id="paymentProofModalImage" alt="Bukti pembayaran" /></div>
     </div>
     <div class="admin-modal-overlay hidden" id="customerViewModal" role="dialog" aria-modal="true" aria-labelledby="customerViewTitle">
       <div class="admin-config-modal customer-view-modal">
@@ -125,6 +130,7 @@
         <div class="admin-modal-actions"><button class="button button-light" id="cancelFirebaseConfig" type="button">Batal</button><button class="button button-dark" id="saveFirebaseConfig" type="submit">Simpan konfigurasi</button></div>
       </form>
     </div>
+    <script type="module" src="./contact-widget.js"></script>
     <script type="module" src="./admin.js"></script>
   </body>
 </html>
